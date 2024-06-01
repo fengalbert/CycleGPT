@@ -1,0 +1,20 @@
+{
+	"data": {
+		"file_path": "./data/JAK2/12024_fold_0_test.csv",
+		"task": "regression"
+	},
+	"model_path": "./ckpt/JAK2_use/best_fold2.pt",
+	"model": {
+		"atom_dim": 42,
+		"bond_dim": 14,
+		"pharm_dim": 194,
+		"reac_dim": 34,
+		"hid_dim": 300,
+		"depth": 3,
+		"act": "ReLU",
+		"num_task": 1
+	},
+	"pred": {
+		"device": "cuda:1"
+	}
+}
