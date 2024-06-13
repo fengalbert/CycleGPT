@@ -13,10 +13,10 @@ from sampling_methods import top_p_transform, random_mask_transform, noised_top_
     MaxEntropy_transform, sin_transform, tanh_transform, square_transform, cube_transform
 # -----------------------------------------------------------------------------
 init_from = 'resume'  # either 'resume' (from an out_dir) or a gpt2 variant (e.g. 'gpt2-xl')
-# out_dir = f'/data2/fhu/nanoGPT-master/out_sample'  # ignored if init_from is not 'resume'  
+ 
 resume_checkpoint = './model/lion_macro/macro_pretrain.pt'
 
-sampling_path = f'/data2/fhu/nanoGPT-master/out_sample/sampling/lion_macro_fine_tune_from_transform/'   # {macro_name}
+sampling_path = f'./out_sample/sampling/lion_macro_fine_tune_from_transform/'   # {macro_name}
 os.makedirs(sampling_path, exist_ok=True)
 
 model_name = resume_checkpoint.split('/')[-1]
@@ -40,15 +40,14 @@ noise_weight = 0.1
 MaxEntropy = 0.1
 
 
-seed = 1337  
+
 device = 'cuda:1'  # examples: 'cpu', 'cuda', 'cuda:0', 'cuda:1', etc.
 dtype = 'float16'  # 'float32' or 'bfloat16' or 'float16'
 compile = False  # use PyTorch 2.0 to compile the model to be faster
 exec(open('configurator.py').read())  # overrides from command line or config file
 # -----------------------------------------------------------------------------
 
-torch.manual_seed(seed)
-torch.cuda.manual_seed(seed)
+
 torch.backends.cuda.matmul.allow_tf32 = True 
 torch.backends.cudnn.allow_tf32 = True 
 device_type = 'cuda' if 'cuda' in device else 'cpu'  # for later use in torch.autocast
@@ -143,17 +142,11 @@ def sample(idx, max_new_tokens, transform_sampling, device):
                 logits = F.softmax(logits, dim=-1)
                 v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
                 logits[logits < v[:, [-1]]] = 0#-float('Inf')
-            elif transform_sampling == 'tanh_temp_topk':
-                logits = torch.log(logits) / temperature  
-                logits = F.softmax(logits, dim=-1)
-                v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
-                logits[logits < v[:, [-1]]] = 0 #-float('Inf')
-                logits = torch.tanh(logits)
+
             elif transform_sampling == 'tanh_temp':
                 logits = torch.log(logits) / temperature  
                 logits = F.softmax(logits, dim=-1)
-                #v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
-                #logits[logits < v[:, [-1]]] = 0#-float('Inf')
+
                 logits = torch.tanh(logits)
         #if use_temperature is not None:
             #logits = torch.log(logits) / temperature  # torch.log(logits) / temperature

@@ -29,13 +29,13 @@ def parse_args():
     parser.add_argument('-maxBlocks', required=True,
                         help='the maximum number of building blocks that the fragments contain')
     
-    parser.add_argument('-maxSR', required=True,  # 不切割的最小的环
+    parser.add_argument('-maxSR', required=True, 
                         help='only cyclic bonds in smallest SSSR ring of size larger than this value will be cleaved')
 
     parser.add_argument('-asMols', required=True,
                         help='True of False; if True, MacFrag will reture fragments as molecules and the fragments.sdf file will be output; if False, MacFrag will reture fragments.smi file with fragments representd as SMILES strings')
     
-    parser.add_argument('-minFragAtoms', required=True,  # 包含的最小的原子
+    parser.add_argument('-minFragAtoms', required=True,  
                         help='the minimum number of atoms that the fragments contain')
 
     return parser.parse_args()
@@ -149,14 +149,14 @@ reactionDefs = (
     )
 
 environMatchers = {}
-for env, sma in environs.items():  # environs 'L1': '[C;D3]([#0,#6,#7,#8])(=O)'
+for env, sma in environs.items(): 
     
-    environMatchers[env] = Chem.MolFromSmarts(sma)  # {'L1': mol  }
+    environMatchers[env] = Chem.MolFromSmarts(sma)  
    
         
 bondMatchers = []
 
-for compats in reactionDefs:  # compats [('3', '4', '-'), ('3', '9', '-')]
+for compats in reactionDefs: 
     
     tmp = []
     for i1, i2, bType in compats:
@@ -165,10 +165,10 @@ for compats in reactionDefs:  # compats [('3', '4', '-'), ('3', '9', '-')]
         patt = '[$(%s)]%s[$(%s)]' % (e1, bType, e2)
         patt = Chem.MolFromSmarts(patt)
         tmp.append((i1, i2, bType, patt))
-    bondMatchers.append(tmp)  # [(i1, i2, bType, patt) ]
+    bondMatchers.append(tmp)  
 
 
-def SSSRsize_filter(bond,maxSR=13):  # 最大多少个环
+def SSSRsize_filter(bond,maxSR=13): 
     
     judge=True
     for i in range(3,maxSR+1):
@@ -178,55 +178,55 @@ def SSSRsize_filter(bond,maxSR=13):  # 最大多少个环
     return judge
     
     
-def searchBonds(mol,maxSR=13):  # 搜寻键 根据环境和键模式在分子中搜索键。track预处理的键并生成符合键信息
+def searchBonds(mol,maxSR=13): 
     
-    bondsDone = set()  # 键部分
+    bondsDone = set() 
     
-    envMatches = {}  # {'L1': True, 'L2': False } 存储环境匹配的结果
-    for env, patt in environMatchers.items():  # {'L1': mol, 'L2': mol2 } 划分好的环境
-        envMatches[env] = mol.HasSubstructMatch(patt)  # 子结构 HasSubstructMatch bool类型
-        # 分子是否具有与模式匹配的子结构
+    envMatches = {} 
+    for env, patt in environMatchers.items():  
+        envMatches[env] = mol.HasSubstructMatch(patt)  
         
-    for compats in bondMatchers:  # [(i1, i2, bType, patt) ]
+        
+    for compats in bondMatchers: 
                 
         for i1, i2, bType, patt in compats:
-            if not envMatches['L' + i1] or not envMatches['L' + i2]:  # 均满足 两个环境模式都为True
+            if not envMatches['L' + i1] or not envMatches['L' + i2]:  
                 continue
             
-            matches = mol.GetSubstructMatches(patt)  # 返回与子结构查询匹配的分子原子索引元组(,),(,)
-            for match in matches:  # 原子索引组中的原子 单个原子
-                if match not in bondsDone and (match[1], match[0]) not in bondsDone:  # 不在键
-                    bond=mol.GetBondBetweenAtoms(match[0],match[1])  # 返回两个原子之间的键
+            matches = mol.GetSubstructMatches(patt) 
+            for match in matches:  
+                if match not in bondsDone and (match[1], match[0]) not in bondsDone: 
+                    bond=mol.GetBondBetweenAtoms(match[0],match[1]) 
                     
-                    if not bond.IsInRing():  # 非环键
+                    if not bond.IsInRing():  
                         bondsDone.add(match) 
                         yield (((match[0], match[1]), (i1, i2)))
-                    elif bond.IsInRing() and  SSSRsize_filter(bond,maxSR=maxSR):  # SSSRsize_filter maxSR以下的环为False就不加
+                    elif bond.IsInRing() and  SSSRsize_filter(bond,maxSR=maxSR):  
                         bondsDone.add(match)
                         yield (((match[0], match[1]), (i1, i2)))
                     
-def mol_with_atom_index(mol):  # 原子索引作为原子映射数添加到分子中。
-    for atom in mol.GetAtoms():  # GetAtoms
-        atom.SetAtomMapNum(atom.GetIdx())  # SetAtomMapNum设置原子映射数，值为0将清除原子映射 atom.GetIdx()返回原子的索引(在分子中排序)
+def mol_with_atom_index(mol):  
+    for atom in mol.GetAtoms():  
+        atom.SetAtomMapNum(atom.GetIdx()) 
     return mol
 
-def mol_remove_atom_mapnumber(mol):  # 删除了原子的map number
+def mol_remove_atom_mapnumber(mol): 
     for atom in mol.GetAtoms():
         atom.ClearProp('molAtomMapNumber')
     return mol
 
-def Get_block_index(blocks):  # 得到block的索引
+def Get_block_index(blocks):  
     
     block_index={}
     i=0
     for bs in blocks:
-        tmp=[a.GetAtomMapNum() for a in bs.GetAtoms() if a.GetSymbol()!='*']  # block中的非*原子 GetAtomMapNum获取原子映射编号，如果未设置则返回0
+        tmp=[a.GetAtomMapNum() for a in bs.GetAtoms() if a.GetSymbol()!='*']  
 #        tmp=list(set(tmp))
         block_index[tuple(tmp)]=i  # {0:(, , ), 1:(, , ), ...}
         i+=1      
     return block_index  # # {0:(, , ), 1:(, , ), ...}
 
-def extrac_submol(mol,atomList,link):  # 提取子mol文件
+def extrac_submol(mol,atomList,link):  
     aList_mol=list(range(mol.GetNumAtoms()))
     aList_link=list(set([a[0] for a in link]))
     aList_submol=list(set(atomList+aList_link))
@@ -258,12 +258,12 @@ def extrac_submol(mol,atomList,link):  # 提取子mol文件
     return frag
  
     
-def simple_iter(graph, k):  # 子图搜索
+def simple_iter(graph, k): 
     cis=[]
 #    numb_at_most_k = 0
-    # colors for vertices (igraph is to slow) 顶点的颜色(图形会变慢)
-    colors = graph.vcount()*[-1]  # 获取图对象中节点的数量 颜色
-    # consider only graphs with at least k vertices 只考虑至少有k个顶点的图
+    # colors for vertices (igraph is to slow) 
+    colors = graph.vcount()*[-1]  
+    # consider only graphs with at least k vertices 
     for i in range(graph.vcount() -1, -1, -1):
         # subgraph_set
         subgraph_set = [i]
@@ -358,46 +358,20 @@ def simple_iter(graph, k):  # 子图搜索
     return cis       
 
        
-def MacFrag(mol,maxBlocks=6,maxSR=12,asMols=False,minFragAtoms=1):  # 切割函数 主入口
-    # maxBlocks 砌块最大数量  maxSR 等于小于该值环结构不切 minFragAtoms=1 最小单位1
+def MacFrag(mol,maxBlocks=6,maxSR=12,asMols=False,minFragAtoms=1):  
+    # maxBlocks 
     fragPool={}
-    mol=mol_with_atom_index(mol)    # 带原子映射的mol文件
+    mol=mol_with_atom_index(mol)    
     #print(f'mol_with_atom is {mol}')
-    bonds=list(searchBonds(mol,maxSR=maxSR))  # 找到切割的原子  [((match[0], match[1]), (i1, i2)), ]
+    bonds=list(searchBonds(mol,maxSR=maxSR))  
     bonds_re = [mol.GetBondBetweenAtoms(i[0][0],i[0][1]).GetIdx() for i in bonds]
-    print(f'search bonds is {bonds}')  # 找到
+    print(f'search bonds is {bonds}')  
 
-    print(f'bonds_re is {bonds_re}')  # 找到
-    tmp = Chem.FragmentOnBonds(mol, bonds_re, addDummies=False)  # mol文件 加不加虚拟原子
+    print(f'bonds_re is {bonds_re}')  
+    tmp = Chem.FragmentOnBonds(mol, bonds_re, addDummies=False)  
     frags_idx_lst = Chem.GetMolFrags(tmp)
 
-    print(f'frags_idx_lst is {frags_idx_lst}')  # 找到
+    print(f'frags_idx_lst is {frags_idx_lst}') 
     return frags_idx_lst
 
 
-
-    #fragmol=BreakBRICSBonds(mol, bonds=bonds)  # 使用指定键断裂该分子 该断的都断 返回多个mol文件
-    #print(f'fragmol is {fragmol}')  #
-
-    #blocks=Chem.GetMolFrags(fragmol,asMols=False)  # 从分子中找到不连接的片段
-    #print(f'blocks is {blocks}')
-
-    #blocks_atom_num = Chem.GetMolFrags(fragmol, asMols=False)
-    #print(f'blocks_atom_num is {blocks_atom_num}')  # 将大于原子数量的虚拟原子去掉？
-
-#smiles = 'CC1=CN=C(NC2=CC(COC/C=C/COC3)=C(OCCN4CCCCC4)C=C2)N=C1NC5=CC3=CC=C5'
-#mol = Chem.MolFromSmiles(smiles)
-#MacFrag(mol)
-# def main():
-#     opt = parse_args()
-#     # input_file=opt.input_file
-#
-#     dir=opt.output_path
-#     asMols=opt.asMols  # false
-#     maxBlocks=int(opt.maxBlocks)  # 1
-#     maxSR=int(opt.maxSR)  # 不切割的最大环大小
-#     minFragAtoms=int(opt.minFragAtoms)  # 最小的片段原子数
-#     write_file(input_file,dir,maxBlocks,maxSR,asMols,minFragAtoms)
-#
-# if __name__ == '__main__':
-#     main()

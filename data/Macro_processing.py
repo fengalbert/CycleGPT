@@ -16,7 +16,7 @@ def get_parser():
         '--macro_path', '-a', type=str, default='config.csv',
         help='Path to the dataset with macrocycle smiles. ' )
     parser.add_argument(
-        '--path_to', type=str, default='/...',
+        '--path_to', type=str, default='./',
         help='Path to the dataset with aug macrocycle smiles. ' )
     parser.add_argument(
         '--verbose', type=bool, default=True,
@@ -35,6 +35,38 @@ def get_parser():
         help='The ratio to split Macrocycle data')
 
     return parser
+
+special_token = {'start_char': 'G',
+                    'end_char': 'E',
+                    'pad_char': 'A'}
+indices_token = {"0": 'H', "1": '9', "2": 'D', "3": 'r', "4": 'T', "5": 'R', "6": 'V', "7": '4',
+                 "8": 'c', "9": 'l', "10": 'b', "11": '.', "12": 'C', "13": 'Y', "14": 's', "15": 'B',
+                 "16": 'k', "17": '+', "18": 'p', "19": '2', "20": '7', "21": '8', "22": 'O',
+                 "23": '%', "24": 'o', "25": '6', "26": 'N', "27": 'A', "28": 't', "29": '$',
+                 "30": '(', "31": 'u', "32": 'Z', "33": '#', "34": 'M', "35": 'P', "36": 'G',
+                 "37": 'I', "38": '=', "39": '-', "40": 'X', "41": '@', "42": 'E', "43": ':',
+                 "44": '\\', "45": ')', "46": 'i', "47": 'K', "48": '/', "49": '{', "50": 'h',
+                 "51": 'L', "52": 'n', "53": 'U', "54": '[', "55": '0', "56": 'y', "57": 'e',
+                 "58": '3', "59": 'g', "60": 'f', "61": '}', "62": '1', "63": 'd', "64": 'W',
+                 "65": '5', "66": 'S', "67": 'F', "68": ']', "69": 'a', "70": 'm'}  
+
+token_indices = {v: k for k, v in indices_token.items()}  
+
+def encode(s): 
+    return [token_indices[c] for c in s]
+
+def decode(l): 
+    ''.join([indices_token[i] for i in l])
+
+vocab_size = len(indices_token)
+
+def str2ind_array(path):
+    data_arrays = []
+    for i in read_smiles_csv(path):
+        smi_ind = encode(i)  
+        ids = np.array(smi_ind, dtype=np.int64)  
+        data_arrays.append(ids) 
+    return data_arrays
 
 def read_smiles_csv(path):
     return pd.read_csv(path,
@@ -57,16 +89,16 @@ def pad_smiles(smiles,max_len):
     return smiles_pad
 
 def write_in_file(path_to_file, data):
-    with open(path_to_file, 'w+') as f:  # 可读可写str
+    with open(path_to_file, 'w+') as f: 
         for item in data:
             f.write("%s\n" % item)
 
 def save_obj(obj, name):
     """save obj with pickle"""
-    name = name.replace('.pkl', '')  # (要替换文本，替换成文本)
-    with open(name + '.pkl', 'wb') as f:  # 写
+    name = name.replace('.pkl', '')  
+    with open(name + '.pkl', 'wb') as f:  
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
-        # 序列化对象，将对象obj保存到文件file，大数据进行序列化的时候请采用最高协议pickle.HIGHEST_PROTOCOL
+        
 
 def load_macro(config):
     macro_smi = []
@@ -90,7 +122,7 @@ def macro_random(smiles):
     nm = Chem.RenumberAtoms(m, ans)
     return Chem.MolToSmiles(nm, canonical=False, isomericSmiles=True)
 
-def augmentation(config,smi):  # 修改
+def augmentation(config,smi):  
     aug_each = []
     for i in range(1000):
         new = macro_random(smi)
@@ -115,31 +147,31 @@ def augment_dataset(data_ori, config):
 
 def macro_process(config,path_to, name):
     macro_smi, macro_mol = load_macro(config)
-    all_idx = np.arange(len(macro_smi))  # 原始数据个数 0-x，间隔为1左闭右开
-    idx_split = int(config.split*len(all_idx))  # 划分训练集测试集  单个数字
-    np.random.shuffle(all_idx)  # 已有列表进行打乱
-    if idx_split == 0:  # Fine_turning case
+    all_idx = np.arange(len(macro_smi))  
+    idx_split = int(config.split*len(all_idx))  
+    np.random.shuffle(all_idx)  
+    if idx_split == 0:  
         idx_ori_tr = [0]
         idx_ori_val = [0]
     else:
-        idx_ori_tr = all_idx[:idx_split]  # 训练集  含多个数字的列表
+        idx_ori_tr = all_idx[:idx_split]  
         idx_ori_val = all_idx[idx_split:]
         if config.verbose:
             print(f'Size of the training set after split: {len(idx_ori_tr)}')
             print(f'Size of the validation set after split: {len(idx_ori_val)}')
-    d = dict(enumerate(macro_smi))  # {序号：smi}
-    smi_ori_tr = [d.get(item) for item in idx_ori_tr]  # 返回值smi
-    smi_ori_val = [d.get(item) for item in idx_ori_val]  # 返回值smi
+    d = dict(enumerate(macro_smi)) 
+    smi_ori_tr = [d.get(item) for item in idx_ori_tr] 
+    smi_ori_val = [d.get(item) for item in idx_ori_val]  
 
     save_data(f'{path_to}macro_ori_tr', smi_ori_tr)
     save_data(f'{path_to}macro_ori_val', smi_ori_val)
     if config.augment > 0 and config.verbose:
         print(f'Macrocycle of augmentation is set to {config.augment}-fold start')
-        smi_aug_tr = augment_dataset(smi_ori_tr, config)  # 返回smi
-        smi_aug_val = augment_dataset(smi_ori_val, config)  # 返回smi
-        full_aug_tr = list(set(smi_ori_tr + smi_aug_tr))  # smi的列表
+        smi_aug_tr = augment_dataset(smi_ori_tr, config)  
+        smi_aug_val = augment_dataset(smi_ori_val, config)
+        full_aug_tr = list(set(smi_ori_tr + smi_aug_tr))  
         shuffle(full_aug_tr)
-        full_aug_val = list(set(smi_ori_val + smi_aug_val))  # smi的列表
+        full_aug_val = list(set(smi_ori_val + smi_aug_val)) 
         shuffle(full_aug_val)
         all_macro_aug = full_aug_tr + full_aug_val
         save_data(f'{path_to}full_aug_tr', full_aug_tr)
@@ -156,21 +188,32 @@ def macro_process(config,path_to, name):
         save_data(f'{path_to}full_ori_tr_pad', full_ori_tr_pad)
         save_data(f'{path_to}full_ori_val_pad', full_ori_val_pad)
 
+        train_array = str2ind_array(f'{path_to}full_aug_tr_pad.csv') 
+        val_array = str2ind_array(f'{path_to}full_aug_val_pad.csv')
+        np.save(os.path.join(f'{path_to}train_array'), train_array )
+        np.save(os.path.join(f'{path_to}val_array'), val_array )
+
         if config.verbose:
             print(f'The number of training macrocycles after agumentation: {len(full_aug_tr)}')
             print(f'The number of validation macrocycles after agumentation: {len(full_aug_val)}')
-    else:  # 不增强
-       save_data(f'{path_to}macro_ori', macro_smi)
-       macro_smi_pad = [pad_smiles(each, config.max_len) for each in macro_smi]
-       save_data(f'{path_to}{name}_pad', macro_smi_pad)
-       
+    else:  
+        full_ori_tr_pad = [pad_smiles(each, config.max_len) for each in smi_ori_tr]
+        full_ori_val_pad = [pad_smiles(each, config.max_len) for each in smi_ori_val]
+        save_data(f'{path_to}full_ori_tr_pad', full_ori_tr_pad)
+        save_data(f'{path_to}full_ori_val_pad', full_ori_val_pad)
+        
+        train_array = str2ind_array(f'{path_to}full_ori_tr_pad.csv') 
+        val_array = str2ind_array(f'{path_to}full_ori_val_pad.csv')
+        np.save(os.path.join(f'{path_to}train_array'), train_array )
+        np.save(os.path.join(f'{path_to}val_array'), val_array )
+
 
 
 def main(config):
     print('\nThe macrocycle processing is beginning')
     name = config.macro_path.split('/')[-1].replace('.csv', '')
     print(f'\nThe processing dataset is : {name}')
-    # file_dir = os.path.split(__file__)[0]
+
     path_ori = config.path_to
     path_to = f'{path_ori}/{name}/'
     os.makedirs(path_to, exist_ok=True)
