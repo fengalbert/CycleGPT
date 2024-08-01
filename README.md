@@ -1,5 +1,5 @@
 # CycleGPT
-This repo  is using for “Exploring the macrocyclic chemical space for heuristic drug design with deep learning models”。
+This repo  is using for “Exploring the macrocyclic chemical space for heuristic drug design with deep learning models”.
 
 ## Environment
 ```
@@ -12,7 +12,7 @@ conda activate CycleGPT
 cd data/xxx
 Macro_processing.py --macro_path xxx.csv --augment 0
 ```
-Macro_processing.py: split and pad the data, implement augmentation if necessary.
+Macro_processing.py: split and pad the data, implement augmentation if necessary. xxx can switch to your own data.
 
 
 
@@ -23,7 +23,8 @@ python lion_macro_train.py --input_name=xxx --device=cuda:2 --init_from=scratch 
 ```
 input_name: train dataset name,  the same as processing data.
 
-init_from: scratch--init a new model, resume--load a pretrain model, need assign "resume_checkpoint". 
+init_from: scratch--init a new model, resume--load a pretrain model, need assign "resume_checkpoint". If resume, max_iters may need to adjust.
+
 ### Sampling
 Tanh-Tempered sampling as example. You can switch Sin-Tempered sampling or other sampling methods through sampling_methods.py. 
 
@@ -46,7 +47,7 @@ macro_novelty.py: pick the novel molecules.
 cd CyclePred
 python Macfrag_data.py
 ```
-Using MacFrag to constract the Heterogeneous graph and Seperate the dataset. 
+Using MacFrag to constract the Heterogeneous graph and Seperate the dataset for training. 
 ### Training
 ```
 python CyclePred_train.py ./config/CyclePred_train_Jak2.json
@@ -56,4 +57,4 @@ Json file can switch the hyperparameter and train data.
 ```
 python CyclePred_predict_IC50.py ./config/CyclePred_predict_Jak2_IC50.json
 ```
-
+Json file can switch the predicted model and predict data.
