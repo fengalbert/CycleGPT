@@ -59,4 +59,4 @@ Json file can switch the hyperparameter and train data.
 ```
 python CyclePred_predict_IC50.py ./config/CyclePred_predict_Jak2_IC50.json
 ```
-Json file can switch the predicted model and predict data.
+Json file can switch the predicted model and predict molecules data.
