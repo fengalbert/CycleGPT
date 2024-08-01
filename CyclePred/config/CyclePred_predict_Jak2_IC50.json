@@ -1,6 +1,6 @@
 {
 	"data": {
-		"file_path": "./data/JAK2/12024_fold_0_test.csv",
+		"file_path": "./data/JAK2/2024_fold_0_test.csv",
 		"task": "regression"
 	},
 	"model_path": "./ckpt/JAK2_use/best_fold2.pt",
