@@ -5,7 +5,7 @@ import torch
 import tiktoken
 from lion_macro_model import GPTConfig, GPT
 from torch.nn import functional as F
-from data.chembl_add_drugbank.prepare_smiles import encode, decode, indices_token, special_token, token_indices
+from data.Macro_processing import encode, decode, indices_token, special_token, token_indices
 import time
 import warnings
 from sampling_methods import top_p_transform, random_mask_transform, noised_top_k_transform, \
