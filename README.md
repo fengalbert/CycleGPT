@@ -57,6 +57,8 @@ macro_novelty.py: pick the novel molecules.
 ```
 ## Usage of CyclePred
 If you only use pre-trained CyclePred for prediction, you can skip the data processing and the training process. We provide pre-trained models in the ckpt folder.
+
+We used dgl(1.1.1+cuda) version during code development, and now dgl maintains version 2.x. If the GPU is not available, the user can change devide to the cpu or update the dgl dependency package.
 ### Data processing
 ```
 cd CyclePred
