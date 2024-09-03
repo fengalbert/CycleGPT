@@ -17,6 +17,7 @@ pip3 install numpy --pre torch --force-reinstall --index-url https://download.py
 ```
 cd data
 Macro_processing.py --macro_path xxx.csv --augment 0
+Macro_processing.py --macro_path macro_all.csv --augment 0
 ```
 Macro_processing.py: split and pad the data, implement augmentation if necessary(augment: switch to number you want). 
 
@@ -26,6 +27,7 @@ xxx.csv can switch to your own data, such as: macro_all.csv.
 ### Training
 ```
 python lion_macro_train.py --input_name=xxx --device=cuda:2 --init_from=scratch --batch_size=128 --max_iters=30
+python lion_macro_train.py --input_name=macro_all --device=cuda:2 --init_from=scratch --batch_size=128 --max_iters=30
 ```
 input_name: train dataset name,  the same as processing data,such as: macro_all.
 
