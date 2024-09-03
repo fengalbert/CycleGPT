@@ -43,12 +43,14 @@ Tanh-Tempered sampling as example. You can switch Sin-Tempered sampling or other
 Pretrain model for generated macrocycles can acquire from https://huggingface.co/FengAlbert/CycleGPT
 ```
 python lion_sample_tanh_temp_transform.py --resume_checkpoint=xxx --temperature=0.7 --device=cuda:2
+python lion_sample_tanh_temp_transform.py --resume_checkpoint=./ckpt_22_cycle_gpt.pt --temperature=0.7 --device=cuda:2
 ```
 A trained model must be assigned to sample. --resume_checkpoint=xxx/xxx/xxx.pt (model file path).
 
 This will generated a pkl file which contain generated molecules. Employing following script to decode molecules.
 ```
 python macro_gen_load_gpt.py --input_name xxx  --pkl_path xxxx.pkl
+python macro_gen_load_gpt.py --input_name macro_all  --pkl_path xxxx.pkl
 ```
 
 Then valuate generated molecules:
