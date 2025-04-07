@@ -38,7 +38,7 @@ init_from:resume--load a pretrain model. This need assign "resume_checkpoint"suc
 If resume, max_iters may need to adjust.
 
 ### Sampling
-HyperTemp sampling(Tanh-Tempered) as example. You can switch SinusoTemp sampling(Sin-Tempered) or other sampling methods through sampling_methods.py. 
+HyperTemp sampling(Tanh-Temp) as example. You can switch other sampling methods through sampling_methods.py. 
 
 Pretrain model for generated macrocycles can acquire from https://huggingface.co/FengAlbert/CycleGPT
 ```
