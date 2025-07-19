@@ -38,12 +38,12 @@ init_from:resume--load a pretrain model. This need assign "resume_checkpoint"suc
 If resume, max_iters may need to adjust.
 
 ### Sampling
-HyperTemp sampling(Tanh-Temp) as example. You can switch other sampling methods through sampling_methods.py. 
+HyperTemp sampling as example. You can switch other sampling methods through sampling_methods.py. 
 
 Pretrain model for generated macrocycles can acquire from https://huggingface.co/FengAlbert/CycleGPT
 ```
-python lion_sample_tanh_temp_transform.py --resume_checkpoint=xxx --temperature=0.7 --device=cuda:2
-python lion_sample_tanh_temp_transform.py --resume_checkpoint=./ckpt_22_cycle_gpt.pt --temperature=0.7 --device=cuda:2
+python lion_sample_HyperTemp_transform.py --resume_checkpoint=xxx --temperature=0.7 --device=cuda:2
+python lion_sample_HyperTemp_transform.py --resume_checkpoint=./ckpt_22_cycle_gpt.pt --temperature=0.7 --device=cuda:2
 ```
 A trained model must be assigned to sample. --resume_checkpoint=xxx/xxx/xxx.pt (model file path).
 
