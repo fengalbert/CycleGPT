@@ -32,7 +32,7 @@ max_new_tokens = 142
 use_temperature = 1
 temperature = 1.0  # 1.0 = no change, < 1.0 = less random, > 1.0 = more random, in predictions 
 top_k = 5  #  200  retain only the top_k most likely tokens, clamp others to have 0 probability  
-transform_sampling = 'tanh_temp'
+transform_sampling = 'HyperTemp'
 top_p = 0.9
 randomspace_rate = 0.1
 preserve_largest_prob = 1
@@ -143,7 +143,7 @@ def sample(idx, max_new_tokens, transform_sampling, device):
                 v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
                 logits[logits < v[:, [-1]]] = 0#-float('Inf')
 
-            elif transform_sampling == 'tanh_temp':
+            elif transform_sampling == 'HyperTemp':
                 logits = torch.log(logits) / temperature  
                 logits = F.softmax(logits, dim=-1)
 
