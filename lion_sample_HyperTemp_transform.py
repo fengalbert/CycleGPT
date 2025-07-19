@@ -147,7 +147,7 @@ def sample(idx, max_new_tokens, transform_sampling, device):
                 logits = torch.log(logits) / temperature  
                 logits = F.softmax(logits, dim=-1)
 
-                logits = torch.tanh(logits)
+                logits = tanh_transform(logits) 
         #if use_temperature is not None:
             #logits = torch.log(logits) / temperature  # torch.log(logits) / temperature
             #print(logits)
